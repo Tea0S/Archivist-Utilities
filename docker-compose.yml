@@ -1,0 +1,30 @@
+services:
+  utlitiy-bot:
+    build:
+      context: .
+      dockerfile: dockerfile
+      # Pass GitHub token as build arg for private repo access (optional)
+      # Usage: GITHUB_TOKEN=your_token docker-compose build
+      args:
+        GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+    container_name: discord_bot
+    restart: unless-stopped
+    environment:
+      TZ: America/New_York
+      PYTHONUNBUFFERED: 1
+    env_file: .env
+    volumes:
+      # Persistent JSON stores (mia_state.json, lore_carousels.json, etc.)
+      - ./data:/app/data
+      # Optional: Mount logs directory if you want persistent logs
+      - ./logs:/app/logs
+      # Mount cogs directory for hot-reloading (required for cogwatch to detect changes)
+      - ./cogs:/app/cogs
+    # No need to expose ports for Discord bot (it makes outbound connections)
+    # Remove expose section if not needed
+    networks:
+      - bot-network
+
+networks:
+  bot-network:
+    driver: bridge
